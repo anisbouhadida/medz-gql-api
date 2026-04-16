@@ -1,0 +1,147 @@
+scalar DateTime
+
+# ── Enums ────────────────────────────────────────────────────────────────────
+
+"""Regulatory type of a medicine."""
+enum MedicineType {
+  "GE or G in the source file"
+  GE
+  "RE or R in the source file"
+  RE
+  "BIO in the source file"
+  BIO
+}
+
+"""Manufacturing origin of a medicine."""
+enum MedicineOrigin {
+  "The medicine is manufactured locally"
+  MANUFACTURED
+  "The medicine is imported from abroad"
+  IMPORTED
+}
+
+"""Regulatory lifecycle status of a medicine."""
+enum MedicineStatus {
+  "Registration is currently active"
+  ACTIVE
+  "Officially withdrawn from the market"
+  WITHDRAWN
+  "Registration was not renewed upon expiry"
+  MARKED_NOT_RENEWED
+}
+
+"""Classifies the type of event affecting a medicine."""
+enum MedicineEventType {
+  "Medicine inserted into or updated in the nomenclature"
+  UPSERT
+  "Medicine officially withdrawn from the market"
+  WITHDRAWAL
+  "Medicine registration not renewed upon expiry"
+  NON_RENEWAL
+}
+
+# ── Types ────────────────────────────────────────────────────────────────────
+
+"""A registered medicine with all its regulatory information."""
+type Medicine {
+  "Official registration number"
+  registrationNumber: String!
+  "Unique code"
+  code: String!
+  "International Common Denomination (INN)"
+  internationalCommonDenomination: String
+  "Commercial brand name"
+  brandName: String
+  "Pharmaceutical form (tablet, solution, etc.)"
+  form: String
+  "Dosage"
+  dosage: String
+  "Product packaging"
+  packaging: String
+  "Classification list"
+  list: String
+  "First price indicator"
+  p1: String
+  "Second price indicator"
+  p2: String
+  "Laboratory holding the registration decision"
+  laboratoryHolder: String
+  "Country of the laboratory holder"
+  laboratoryCountry: String
+  "Initial registration date"
+  initialRegistrationDate: DateTime
+  "Regulatory type of the medicine"
+  type: MedicineType
+  "Manufacturing origin (national or imported)"
+  origin: MedicineOrigin
+  "Optimistic-locking version counter"
+  version: Int!
+}
+
+"""Nomenclature upsert event – medicine added to or updated in the nomenclature."""
+type NomenclatureEvent {
+  "The medicine affected by this event"
+  medicine: Medicine!
+  "Resulting status (always ACTIVE)"
+  status: MedicineStatus!
+  "Event type (always UPSERT)"
+  eventType: MedicineEventType!
+  "Date until which the registration is valid"
+  finalRegistrationDate: DateTime
+  "Declared stability duration (e.g. 24 MOIS)"
+  stabilityDuration: String
+  "Free-text observations"
+  observations: String
+}
+
+"""Withdrawal event – medicine officially withdrawn from the market."""
+type WithdrawalEvent {
+  "The medicine affected by this event"
+  medicine: Medicine!
+  "Resulting status (always WITHDRAWN)"
+  status: MedicineStatus!
+  "Event type (always WITHDRAWAL)"
+  eventType: MedicineEventType!
+  "Date the withdrawal took effect"
+  withdrawalDate: DateTime
+  "Reason stated for the withdrawal"
+  withdrawalReason: String
+}
+
+"""Non-renewal event – medicine registration not renewed upon expiry."""
+type NonRenewalEvent {
+  "The medicine affected by this event"
+  medicine: Medicine!
+  "Resulting status (always MARKED_NOT_RENEWED)"
+  status: MedicineStatus!
+  "Event type (always NON_RENEWAL)"
+  eventType: MedicineEventType!
+  "Date on which the registration expired"
+  finalRegistrationDate: DateTime
+  "Free-text observations"
+  observations: String
+}
+
+"""Any event affecting a medicine."""
+union MedicineEvent = NomenclatureEvent | WithdrawalEvent | NonRenewalEvent
+
+# ── Queries ──────────────────────────────────────────────────────────────────
+
+type Query {
+  "Retrieve a medicine by its registration number"
+  medicineByRegistrationNumber(registrationNumber: String!): Medicine
+
+  "Retrieve a medicine by its unique code"
+  medicineByCode(code: String!): Medicine
+
+  "List all medicines, with optional filtering"
+  medicines(
+    type: MedicineType
+    origin: MedicineOrigin
+    status: MedicineStatus
+  ): [Medicine!]!
+
+  "Retrieve events for a given medicine registration number"
+  medicineEvents(registrationNumber: String!): [MedicineEvent!]!
+}
+
