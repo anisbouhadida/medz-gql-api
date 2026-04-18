@@ -2,7 +2,8 @@ package dz.anisbouhadida.medzgqlapi.domain.model;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineEventType;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
-import java.time.LocalDateTime;
+
+import java.time.OffsetDateTime;
 
 /// Represents a **nomenclature upsert** event for a [Medicine].
 ///
@@ -10,7 +11,7 @@ import java.time.LocalDateTime;
 /// Always carries a [MedicineStatus#ACTIVE] status and an event type of
 /// [MedicineEventType#UPSERT].
 ///
-/// @param medicine                the medicine affected by this event
+/// @param medicineId              the ID of the medicine affected by this event
 /// @param finalRegistrationDate   date until which the registration is valid — may be `null`
 /// @param stabilityDuration       declared stability duration (e.g. `24 MOIS`) — may be `null`
 /// @param observations            free-text observations from the source file — may be `null`
@@ -18,8 +19,8 @@ import java.time.LocalDateTime;
 /// @author Anis Bouhadida
 /// @since 0.0.1
 public record NomenclatureEvent(
-    Medicine medicine,
-    LocalDateTime finalRegistrationDate,
+    Long medicineId,
+    OffsetDateTime finalRegistrationDate,
     String stabilityDuration,
     String observations)
     implements MedicineEvent {

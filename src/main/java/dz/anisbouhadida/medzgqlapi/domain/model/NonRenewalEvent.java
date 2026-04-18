@@ -2,7 +2,8 @@ package dz.anisbouhadida.medzgqlapi.domain.model;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineEventType;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
-import java.time.LocalDateTime;
+
+import java.time.OffsetDateTime;
 
 /// Represents a **non-renewal** event for a [Medicine].
 ///
@@ -10,14 +11,14 @@ import java.time.LocalDateTime;
 /// Always carries a [MedicineStatus#MARKED_NOT_RENEWED] status and an event type of
 /// [MedicineEventType#NON_RENEWAL].
 ///
-/// @param medicine               the medicine affected by this event
+/// @param medicineId             the ID of the medicine affected by this event
 /// @param finalRegistrationDate  date on which the registration expired — may be `null`
 /// @param observations           free-text observations from the source file — may be `null`
 ///
 /// @author Anis Bouhadida
 /// @since 0.0.1
 public record NonRenewalEvent(
-    Medicine medicine, LocalDateTime finalRegistrationDate, String observations)
+        Long medicineId, OffsetDateTime finalRegistrationDate, String observations)
     implements MedicineEvent {
 
   /// {@inheritDoc}

@@ -2,10 +2,11 @@ package dz.anisbouhadida.medzgqlapi.domain.api;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
-import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
-import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineType;
+
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /// Inbound port exposing medicine query use-cases.
@@ -26,21 +27,40 @@ public interface MedicineApi {
   /// Retrieves a medicine by its unique code.
   ///
   /// @param code the unique code to look up
-  /// @return an [Optional] containing the medicine if found
-  Optional<Medicine> findByCode(String code);
+  /// @return a list of medicines matching the code
+  List<Medicine> findByCode(String code);
 
-  /// Lists medicines with optional filtering by type, origin, and current status.
-  ///
-  /// @param type   the medicine type filter, or `null` to skip
-  /// @param origin the medicine origin filter, or `null` to skip
-  /// @param status the current status filter, or `null` to skip
-  /// @return a list of matching medicines (never `null`)
-  List<Medicine> findAll(MedicineType type, MedicineOrigin origin, MedicineStatus status);
+  /// Retrieves a medicine by its ICD.
+  List<Medicine> findByIcd(String icd);
+
+  /// Retrieves a medicine by its brand name.
+  List<Medicine> findByBrandName(String brandName);
+
+  /// Retrieves a medicine by its laboratory holder.
+  List<Medicine> findByLaboratoryHolder(String laboratoryHolder);
 
   /// Retrieves all regulatory events for medicines having the given registration number.
   ///
   /// @param registrationNumber the registration number to look up events for
   /// @return a list of medicine events (never `null`)
   List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber);
+
+  /// Searches medicines using the given filter.
+  ///
+  /// @param filter the search filter
+  /// @return a list of matching medicines (never `null`)
+  List<Medicine> search(MedicineSearchFilter filter);
+
+  /// Finds the latest status for each of the given medicine IDs.
+  ///
+  /// @param medicineIds the medicine IDs to look up
+  /// @return a map from medicine ID to its current status
+  Map<Long, MedicineStatus> findLatestStatusByMedicineIds(List<Long> medicineIds);
+
+  /// Finds all regulatory events for each of the given medicine IDs.
+  ///
+  /// @param medicineIds the medicine IDs to look up
+  /// @return a map from medicine ID to its list of events
+  Map<Long, List<MedicineEvent>> findEventsByMedicineIds(List<Long> medicineIds);
 }
 

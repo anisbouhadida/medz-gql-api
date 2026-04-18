@@ -2,7 +2,8 @@ package dz.anisbouhadida.medzgqlapi.domain.model;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineType;
-import java.time.LocalDateTime;
+
+import java.time.OffsetDateTime;
 
 /// Represents a registered medicine with all its regulatory information.
 ///
@@ -10,6 +11,7 @@ import java.time.LocalDateTime;
 /// registration data of a medicine, including its identifiers, composition,
 /// pharmaceutical form, and administrative information.
 ///
+/// @param id                        unique identifier of the medicine record
 /// @param registrationNumber        official registration number of the medicine
 /// @param code                      unique code of the medicine
 /// @param internationalCommonDenomination international Common Denomination (INN)
@@ -25,11 +27,11 @@ import java.time.LocalDateTime;
 /// @param initialRegistrationDate   initial registration date
 /// @param type                      type of medicine
 /// @param origin                    current origin of the medicine (e.g. national, imported)
-/// @param version                   optimistic-locking version counter
 ///
 /// @author Anis Bouhadida
 /// @since 0.0.1
 public record Medicine(
+        Long id,
     String registrationNumber,
     String code,
     String internationalCommonDenomination,
@@ -42,7 +44,6 @@ public record Medicine(
     String p2,
     String laboratoryHolder,
     String laboratoryCountry,
-    LocalDateTime initialRegistrationDate,
+    OffsetDateTime initialRegistrationDate,
     MedicineType type,
-    MedicineOrigin origin,
-    int version) {}
+    MedicineOrigin origin) {}

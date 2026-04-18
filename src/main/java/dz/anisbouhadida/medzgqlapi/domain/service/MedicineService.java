@@ -3,14 +3,15 @@ package dz.anisbouhadida.medzgqlapi.domain.service;
 import dz.anisbouhadida.medzgqlapi.domain.api.MedicineApi;
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
-import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
-import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineType;
 import dz.anisbouhadida.medzgqlapi.domain.spi.MedicineSpi;
-import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /// Domain service implementing the medicine query use-cases.
 ///
@@ -30,18 +31,45 @@ public class MedicineService implements MedicineApi {
   }
 
   @Override
-  public Optional<Medicine> findByCode(String code) {
+  public List<Medicine> findByCode(String code) {
     return medicineSpi.findByCode(code);
   }
 
   @Override
-  public List<Medicine> findAll(MedicineType type, MedicineOrigin origin, MedicineStatus status) {
-    return medicineSpi.findAll(type, origin, status);
+  public List<Medicine> findByIcd(String icd) {
+    return medicineSpi.findByIcd(icd);
   }
+
+  @Override
+  public List<Medicine> findByBrandName(String brandName) {
+    return medicineSpi.findByBrandName(brandName);
+  }
+
+  @Override
+  public List<Medicine> findByLaboratoryHolder(String laboratoryHolder) {
+    return medicineSpi.findByLaboratoryHolder(laboratoryHolder);
+  }
+
+
 
   @Override
   public List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber) {
     return medicineSpi.findEventsByRegistrationNumber(registrationNumber);
+  }
+
+  @Override
+  public List<Medicine> search(MedicineSearchFilter filter) {
+    return medicineSpi.search(filter);
+  }
+
+  @Override
+  public Map<Long, MedicineStatus> findLatestStatusByMedicineIds(List<Long> medicineIds) {
+    return medicineSpi.findLatestStatusByMedicineIds(medicineIds);
+  }
+
+  @Override
+  public Map<Long, List<MedicineEvent>> findEventsByMedicineIds(List<Long> medicineIds) {
+    return medicineSpi.findEventsByMedicineIds(medicineIds);
   }
 }
 

@@ -44,6 +44,8 @@ enum MedicineEventType {
 
 """A registered medicine with all its regulatory information."""
 type Medicine {
+  "Unique identifier for the medicine (e.g. database ID)"
+  id: ID!
   "Official registration number"
   registrationNumber: String!
   "Unique code"
@@ -60,9 +62,9 @@ type Medicine {
   packaging: String
   "Classification list"
   list: String
-  "First price indicator"
+  "Availability in hospitals"
   p1: String
-  "Second price indicator"
+  "Availability in pharmacies"
   p2: String
   "Laboratory holding the registration decision"
   laboratoryHolder: String
@@ -74,14 +76,14 @@ type Medicine {
   type: MedicineType
   "Manufacturing origin (national or imported)"
   origin: MedicineOrigin
-  "Optimistic-locking version counter"
-  version: Int!
+  "Current regulatory status"
+  status: MedicineStatus!
+  "History of events affecting this medicine"
+  event: [MedicineEvent!]!
 }
 
 """Nomenclature upsert event – medicine added to or updated in the nomenclature."""
 type NomenclatureEvent {
-  "The medicine affected by this event"
-  medicine: Medicine!
   "Resulting status (always ACTIVE)"
   status: MedicineStatus!
   "Event type (always UPSERT)"
@@ -96,8 +98,6 @@ type NomenclatureEvent {
 
 """Withdrawal event – medicine officially withdrawn from the market."""
 type WithdrawalEvent {
-  "The medicine affected by this event"
-  medicine: Medicine!
   "Resulting status (always WITHDRAWN)"
   status: MedicineStatus!
   "Event type (always WITHDRAWAL)"
@@ -110,8 +110,6 @@ type WithdrawalEvent {
 
 """Non-renewal event – medicine registration not renewed upon expiry."""
 type NonRenewalEvent {
-  "The medicine affected by this event"
-  medicine: Medicine!
   "Resulting status (always MARKED_NOT_RENEWED)"
   status: MedicineStatus!
   "Event type (always NON_RENEWAL)"
@@ -132,16 +130,32 @@ type Query {
   medicineByRegistrationNumber(registrationNumber: String!): Medicine
 
   "Retrieve a medicine by its unique code"
-  medicineByCode(code: String!): Medicine
+  medicineByCode(code: String!): [Medicine!]!
 
-  "List all medicines, with optional filtering"
-  medicines(
-    type: MedicineType
-    origin: MedicineOrigin
-    status: MedicineStatus
-  ): [Medicine!]!
+  "Retrieve a medicine by its ICD"
+  medicineByIcd(icd: String!): [Medicine!]!
+
+  "Retrieve a medicine by its brand name"
+  medicineByBrandName(brandName: String!): [Medicine!]!
+
+  "Retrieve a medicine by its laboratory holder"
+  medicineByLaboratoryHolder(laboratoryHolder: String!): [Medicine!]!
 
   "Retrieve events for a given medicine registration number"
   medicineEvents(registrationNumber: String!): [MedicineEvent!]!
+
+  "Search medicines by text (registration number, code, INN, or brand name) and optional filters"
+  medicineSearch(filter: MedicineSearchFilter!): [Medicine!]!
 }
 
+"""Input filter for searching medicines."""
+input MedicineSearchFilter {
+  "Free text to match against registration number, code, INN, or brand name (max 255 chars)"
+  searchText: String
+  "Manufacturing origin filter"
+  origin: MedicineOrigin
+  "Regulatory status filter"
+  status: MedicineStatus
+  "Laboratory holder names to filter by (max 50 entries, each max 255 chars)"
+  laboratoryHolders: [String!]
+}

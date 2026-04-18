@@ -2,24 +2,24 @@ package dz.anisbouhadida.medzgqlapi.infrastructure.adapter;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
-import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineType;
 import dz.anisbouhadida.medzgqlapi.domain.spi.MedicineSpi;
 import dz.anisbouhadida.medzgqlapi.infrastructure.entity.MedicineEntity;
+import dz.anisbouhadida.medzgqlapi.infrastructure.entity.MedicineStatusHistoryEntity;
 import dz.anisbouhadida.medzgqlapi.infrastructure.mapper.MedicineMapper;
-import dz.anisbouhadida.medzgqlapi.infrastructure.repository.MedicineRepository;
-import dz.anisbouhadida.medzgqlapi.infrastructure.repository.MedicineStatusHistoryRepository;
-import dz.anisbouhadida.medzgqlapi.infrastructure.repository.NomenclatureEventRepository;
-import dz.anisbouhadida.medzgqlapi.infrastructure.repository.NonRenewalEventRepository;
-import dz.anisbouhadida.medzgqlapi.infrastructure.repository.WithdrawalEventRepository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import dz.anisbouhadida.medzgqlapi.infrastructure.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /// Infrastructure adapter that implements [MedicineSpi] using
 /// Spring Data JPA repositories.
@@ -44,24 +44,82 @@ public class MedicineAdapter implements MedicineSpi {
   @Override
   public Optional<Medicine> findByRegistrationNumber(String registrationNumber) {
     return medicineRepository
-        .findFirstByRegistrationNumber(registrationNumber)
+        .findByRegistrationNumber(registrationNumber)
         .map(mapper::toDomain);
   }
 
   @Override
-  public Optional<Medicine> findByCode(String code) {
-    return medicineRepository.findFirstByCode(code).map(mapper::toDomain);
+  public List<Medicine> findByCode(String code) {
+    return medicineRepository.findByCode(code).stream().map(mapper::toDomain).toList();
   }
 
   @Override
-  public List<Medicine> findAll(
-      MedicineType type, MedicineOrigin origin, MedicineStatus status) {
+  public List<Medicine> findByIcd(String icd) {
+    return medicineRepository.findByIcd(icd).stream().map(mapper::toDomain).toList();
+  }
 
-    Specification<MedicineEntity> spec =
-        (root, query, cb) -> cb.conjunction();
+  @Override
+  public List<Medicine> findByBrandName(String brandName) {
+    return medicineRepository.findByBrandName(brandName).stream().map(mapper::toDomain).toList();
+  }
 
-    if (type != null) {
-      spec = spec.and((root, _, cb) -> cb.equal(root.get("type"), type));
+  @Override
+  public List<Medicine> findByLaboratoryHolder(String laboratoryHolder) {
+    return medicineRepository.findByLaboratoryHolder(laboratoryHolder).stream().map(mapper::toDomain).toList();
+  }
+
+  @Override
+  public List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber) {
+    Optional<MedicineEntity> medicineEntity =
+        medicineRepository.findByRegistrationNumber(registrationNumber);
+    List<MedicineEvent> events = new ArrayList<>();
+
+    if (medicineEntity.isEmpty()) {
+      return events;
+    }
+
+      Long id = medicineEntity.get().getMedicineId();
+
+      nomenclatureEventRepository
+          .findByMedicineId(id)
+          .map(mapper::toDomain)
+          .ifPresent(events::add);
+
+      withdrawalEventRepository
+          .findByMedicineId(id)
+          .map(mapper::toDomain)
+          .ifPresent(events::add);
+
+      nonRenewalEventRepository
+          .findByMedicineId(id)
+          .map(mapper::toDomain)
+          .ifPresent(events::add);
+
+
+    return events;
+  }
+
+  @Override
+  public List<Medicine> search(MedicineSearchFilter filter) {
+
+    String searchText = filter.searchText();
+    MedicineOrigin origin = filter.origin();
+    MedicineStatus status = filter.status();
+    List<String> laboratoryHolders = filter.laboratoryHolders();
+
+    Specification<MedicineEntity> spec = (root, query, cb) -> cb.conjunction();
+
+    if (searchText != null && !searchText.isBlank()) {
+      String escaped = escapeLike(searchText.toLowerCase());
+      String pattern = "%" + escaped + "%";
+      spec =
+          spec.and(
+              (root, _, cb) ->
+                  cb.or(
+                      cb.like(cb.lower(root.get("registrationNumber")), pattern),
+                      cb.like(cb.lower(root.get("code")), pattern),
+                      cb.like(cb.lower(root.get("icd")), pattern),
+                      cb.like(cb.lower(root.get("brandName")), pattern)));
     }
     if (origin != null) {
       spec = spec.and((root, _, cb) -> cb.equal(root.get("origin"), origin));
@@ -73,39 +131,54 @@ public class MedicineAdapter implements MedicineSpi {
       }
       spec = spec.and((root, _, _) -> root.get("medicineId").in(medicineIds));
     }
+    if (laboratoryHolders != null && !laboratoryHolders.isEmpty()) {
+      spec = spec.and((root, _, cb) -> cb.lower(root.get("laboratoryHolder")).in(
+          laboratoryHolders.stream().map(String::toLowerCase).toList()));
+    }
 
-    return medicineRepository.findAll(spec).stream()
-        .map(mapper::toDomain)
-        .toList();
+    return medicineRepository.findAll(spec).stream().map(mapper::toDomain).toList();
+  }
+
+  /// Escapes SQL LIKE special characters (`%`, `_`, `\`) so that
+  /// user input is treated as literal text.
+  private static String escapeLike(String input) {
+    return input
+        .replace("\\", "\\\\")
+        .replace("%", "\\%")
+        .replace("_", "\\_");
   }
 
   @Override
-  public List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber) {
-    List<MedicineEntity> medicines =
-        medicineRepository.findByRegistrationNumber(registrationNumber);
-    List<MedicineEvent> events = new ArrayList<>();
+  public Map<Long, MedicineStatus> findLatestStatusByMedicineIds(List<Long> medicineIds) {
+    if (medicineIds.isEmpty()) {
+      return Map.of();
+    }
+    return statusHistoryRepository.findLatestByMedicineIds(medicineIds).stream()
+        .collect(Collectors.toMap(
+            MedicineStatusHistoryEntity::getMedicineId,
+            MedicineStatusHistoryEntity::getStatus
+        ));
+  }
 
-    for (MedicineEntity medicineEntity : medicines) {
-      Long id = medicineEntity.getMedicineId();
-      Medicine medicine = mapper.toDomain(medicineEntity);
-
-      nomenclatureEventRepository
-          .findByMedicineId(id)
-          .map(e -> mapper.toDomain(e, medicine))
-          .ifPresent(events::add);
-
-      withdrawalEventRepository
-          .findByMedicineId(id)
-          .map(e -> mapper.toDomain(e, medicine))
-          .ifPresent(events::add);
-
-      nonRenewalEventRepository
-          .findByMedicineId(id)
-          .map(e -> mapper.toDomain(e, medicine))
-          .ifPresent(events::add);
+  @Override
+  public Map<Long, List<MedicineEvent>> findEventsByMedicineIds(List<Long> medicineIds) {
+    if (medicineIds.isEmpty()) {
+      return Map.of();
     }
 
-    return events;
+    Map<Long, List<MedicineEvent>> result = medicineIds.stream()
+        .collect(Collectors.toMap(id -> id, _ -> new ArrayList<>()));
+
+    nomenclatureEventRepository.findByMedicineIdIn(medicineIds)
+        .forEach(e -> result.get(e.getMedicineId()).add(mapper.toDomain(e)));
+
+    withdrawalEventRepository.findByMedicineIdIn(medicineIds)
+        .forEach(e -> result.get(e.getMedicineId()).add(mapper.toDomain(e)));
+
+    nonRenewalEventRepository.findByMedicineIdIn(medicineIds)
+        .forEach(e -> result.get(e.getMedicineId()).add(mapper.toDomain(e)));
+
+    return result;
   }
 }
 
