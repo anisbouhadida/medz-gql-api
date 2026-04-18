@@ -13,6 +13,8 @@ Make sure your local environment matches the project requirements:
 
 See [`README.md`](README.md) for setup and run commands.
 
+Please also review and follow [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) in all project spaces, including issues and pull requests.
+
 ## Development workflow
 
 ```bash

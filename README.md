@@ -225,9 +225,10 @@ This repository is maintained by [Anis Bouhadida](https://github.com/anisbouhadi
 Contributions are welcome through issues and pull requests. Before opening a PR:
 
 1. Read [`CONTRIBUTING.md`](CONTRIBUTING.md)
-2. Keep the hexagonal boundaries intact
-3. Update the GraphQL schema whenever the API contract changes
-4. Run the Maven build locally with JDK 25
+2. Review and follow [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md)
+3. Keep the hexagonal boundaries intact
+4. Update the GraphQL schema whenever the API contract changes
+5. Run the Maven build locally with JDK 25
 
 ## Additional notes
 
