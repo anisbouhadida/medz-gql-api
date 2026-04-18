@@ -44,8 +44,24 @@ When opening a pull request, please:
 
 1. Describe the problem and the change clearly
 2. Mention any schema or database implications
-3. Include tests or explain why tests were not added
-4. Keep changes focused and avoid unrelated refactors
+3. Use the GitHub pull request templates in `.github/PULL_REQUEST_TEMPLATE/` and complete the relevant sections
+4. Include steps to reproduce or validate the change, especially for bug fixes and user-facing behavior
+5. Summarize any security impact at a high level, but do **not** disclose sensitive vulnerability details publicly; use [`SECURITY.md`](SECURITY.md) for private reporting when needed
+6. Include tests run, or explain why tests were not added
+7. Confirm whether documentation, GraphQL schema docs, or migration notes were updated
+8. Keep changes focused and avoid unrelated refactors
+
+## Issues
+
+When opening a GitHub issue, please:
+
+1. Use the templates in `.github/ISSUE_TEMPLATE/`
+2. For bugs, include exact reproduction steps, expected vs. actual behavior, and environment details
+3. For feature requests, describe the problem, proposed solution, concrete use cases, and success criteria
+4. For support/questions, describe your goal, what you already tried, and the specific help you need
+5. Link related issues with `#number` references when applicable
+6. Attach screenshots, logs, or stack traces when they help explain the issue
+7. Do **not** report suspected security vulnerabilities in a public issue; follow [`SECURITY.md`](SECURITY.md) instead
 
 ## Need help?
 

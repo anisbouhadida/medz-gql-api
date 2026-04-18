@@ -1,0 +1,140 @@
+name: Bug report
+description: Report a defect, regression, or incorrect behavior
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+        Please use a clear, descriptive title and include exact reproduction details so contributors can act quickly.
+        If the issue may involve a security vulnerability, **do not file it publicly**. Follow the private reporting guidance in `SECURITY.md` instead.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clear, concise summary of the problem.
+      placeholder: Describe what is broken, when it happens, and which part of the API or GraphQL flow is affected.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps_to_reproduce
+    attributes:
+      label: Steps to reproduce
+      description: Numbered list of exact actions that cause the issue.
+      placeholder: |
+        1. Start the application with ...
+        2. Execute this GraphQL query / mutation ...
+        3. Observe the failure ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: Expected behavior
+      description: What should happen?
+      placeholder: Describe the expected response, UI state, or side effect.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: Actual behavior
+      description: What actually happens instead?
+      placeholder: Include the actual response, error, or incorrect behavior.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component_area
+    attributes:
+      label: Affected component area
+      description: Choose the area most closely related to the issue.
+      options:
+        - GraphQL schema / resolvers
+        - Application controller / config
+        - Domain model / service
+        - Persistence adapter / repository
+        - Database / PostgreSQL
+        - Build / CI / tooling
+        - Documentation
+        - Other / unsure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority_assessment
+    attributes:
+      label: Priority assessment
+      description: Help maintainers triage the impact.
+      options:
+        - P0 - blocking production or critical workflow
+        - P1 - major functionality broken
+        - P2 - moderate issue or workaround exists
+        - P3 - minor issue or polish item
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, browser/client, app version, and relevant dependency/runtime details.
+      placeholder: |
+        - OS: macOS 15 / Ubuntu 24.04 / Windows 11
+        - Client: GraphiQL / curl / browser / custom app
+        - App version or commit SHA: ...
+        - Java version: ...
+        - PostgreSQL version: ...
+        - Other relevant dependencies: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs_and_context
+    attributes:
+      label: Additional context
+      description: Add screenshots, error logs, stack traces, or sample requests/responses.
+      placeholder: Paste logs or drag screenshots here. Redact secrets and personal data before submitting.
+    validations:
+      required: false
+
+  - type: textarea
+    id: related_issues
+    attributes:
+      label: Related issues or references
+      description: Link related issues using #number syntax and mention any relevant PRs, discussions, or tickets.
+      placeholder: "Related: #123, #456"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Submission checklist
+      description: Confirm the report is actionable for contributors.
+      options:
+        - label: I used a clear, descriptive title for this issue.
+          required: true
+        - label: I included exact reproduction steps or explained why the bug is hard to reproduce.
+          required: true
+        - label: I attached screenshots, logs, or stack traces when they help explain the issue.
+          required: false
+        - label: I checked for related issues before submitting this report.
+          required: true
+        - label: This report does not disclose a suspected security vulnerability publicly.
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### What happens next?
+        Maintainers may ask clarifying questions when details are missing, suggest next steps, and update the issue as triage progresses.
+        Labels such as `bug`, priority, and component area will be applied during review.
+

@@ -1,0 +1,133 @@
+name: Question or support request
+description: Ask for help with setup, usage, debugging, or contributor workflow
+title: "[Support]: "
+labels:
+  - question
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out.
+
+        Please make the request as actionable as possible so contributors can help efficiently. Before opening this form, review `README.md`, `HELP.md`, and related issues if you have not already.
+
+        If your question involves a suspected security vulnerability, **do not post it publicly**. Follow the private reporting guidance in `SECURITY.md` instead.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Question or support request
+      description: Clear, concise summary of what you need help with.
+      placeholder: Describe the setup issue, usage question, unexpected behavior, or blocker you are facing.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context_and_goal
+    attributes:
+      label: What are you trying to do?
+      description: Explain your goal and the outcome you expected.
+      placeholder: |
+        I am trying to ...
+        I expected to ...
+        I am blocked because ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted_steps
+    attributes:
+      label: What have you tried so far?
+      description: Include numbered troubleshooting steps, commands, queries, or documentation you already checked.
+      placeholder: |
+        1. Followed the steps in README.md to ...
+        2. Ran `./mvnw clean verify` and saw ...
+        3. Checked HELP.md / existing issues / logs and found ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected_help
+    attributes:
+      label: What kind of help do you need?
+      description: Tell maintainers what answer or next step would unblock you.
+      placeholder: "Example: I need help understanding a GraphQL query, fixing a local setup problem, or confirming whether this behavior is expected."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: topic_area
+    attributes:
+      label: Topic area
+      description: Choose the area most closely related to your question.
+      options:
+        - Local setup / environment
+        - GraphQL schema / queries
+        - Application controller / config
+        - Domain model / service
+        - Persistence adapter / repository
+        - Database / PostgreSQL
+        - Build / CI / tooling
+        - Documentation
+        - Other / unsure
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include OS, client/tooling, app version or commit SHA, and relevant runtime/dependency details.
+      placeholder: |
+        - OS: macOS 15 / Ubuntu 24.04 / Windows 11
+        - Client/tooling: GraphiQL / curl / IntelliJ / Maven / Docker
+        - App version or commit SHA: ...
+        - Java version: ...
+        - PostgreSQL version: ...
+        - Other relevant dependencies: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs_and_examples
+    attributes:
+      label: Logs, screenshots, or examples
+      description: Add logs, stack traces, screenshots, GraphQL queries, or command output when helpful.
+      placeholder: Paste relevant details here. Redact secrets and personal data before submitting.
+    validations:
+      required: false
+
+  - type: textarea
+    id: related_issues
+    attributes:
+      label: Related issues or references
+      description: Link related issues using #number syntax and mention relevant PRs, docs, or discussions.
+      placeholder: "Related: #123, #456"
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Submission checklist
+      description: Confirm the request is ready for maintainers to review.
+      options:
+        - label: I used a clear, descriptive title for this issue.
+          required: true
+        - label: I checked README.md, HELP.md, and related issues before opening this request.
+          required: true
+        - label: I included the troubleshooting steps I already tried.
+          required: true
+        - label: I attached logs, screenshots, or examples when they help explain the problem.
+          required: false
+        - label: This request does not disclose a suspected security vulnerability publicly.
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### What happens next?
+        Maintainers may ask clarifying questions, suggest specific next steps, and link you to relevant issues or documentation.
+        Issues that identify concrete bugs, security risks, or user-facing regressions may be redirected into bug reports for faster triage.
+
+

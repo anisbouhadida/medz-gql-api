@@ -1,0 +1,130 @@
+name: Feature request
+description: Suggest an enhancement, new capability, or user-experience improvement
+title: "[Feature]: "
+labels:
+  - feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing an improvement.
+
+        Please keep the request specific and actionable. The most helpful feature requests explain the problem first, then propose a practical solution and measurable success criteria.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What specific problem does this solve?
+      placeholder: Describe the current pain point, limitation, or user need.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed solution
+      description: Brief description of the suggested approach.
+      placeholder: Explain the change you want to see in the GraphQL API, schema, developer workflow, or documentation.
+    validations:
+      required: true
+
+  - type: textarea
+    id: use_cases
+    attributes:
+      label: Use cases
+      description: Provide 2-3 concrete examples of when this would be valuable.
+      placeholder: |
+        1. As a ... I want ... so that ...
+        2. When ... this feature would help by ...
+        3. This would also be useful for ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: success_criteria
+    attributes:
+      label: Success criteria
+      description: How should maintainers know the feature works?
+      placeholder: Describe observable outcomes, acceptance criteria, or measurable improvements.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional alternatives, workarounds, or related approaches.
+      placeholder: Describe any alternative solutions, trade-offs, or reasons the current workaround is insufficient.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: component_area
+    attributes:
+      label: Relevant component area
+      description: Choose the area most closely related to the request.
+      options:
+        - GraphQL schema / resolvers
+        - Application controller / config
+        - Domain model / service
+        - Persistence adapter / repository
+        - Database / PostgreSQL
+        - Build / CI / tooling
+        - Documentation
+        - Other / unsure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority_assessment
+    attributes:
+      label: Requested priority
+      description: Help maintainers understand the importance of this request.
+      options:
+        - High - materially improves security, performance, or core workflows
+        - Medium - meaningful improvement with moderate impact
+        - Low - nice to have or future enhancement
+    validations:
+      required: true
+
+  - type: textarea
+    id: related_issues
+    attributes:
+      label: Related issues or references
+      description: Link related issues using #number syntax and mention relevant discussions, PRs, or external references.
+      placeholder: "Related: #123, #456"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional_context
+    attributes:
+      label: Additional context
+      description: Add mockups, screenshots, logs, examples, or constraints that would help contributors understand the request.
+      placeholder: Include any extra details that would improve implementation or triage.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Submission checklist
+      description: Confirm the request is ready for triage.
+      options:
+        - label: I used a clear, descriptive title for this issue.
+          required: true
+        - label: I explained the problem before jumping to the solution.
+          required: true
+        - label: I included concrete use cases and measurable success criteria.
+          required: true
+        - label: I checked for related issues before submitting this request.
+          required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### What happens next?
+        Maintainers may ask clarifying questions, link related issues, suggest next steps, and update status as prioritization progresses.
+        Work that improves security, performance, or user experience is typically prioritized first.
+
