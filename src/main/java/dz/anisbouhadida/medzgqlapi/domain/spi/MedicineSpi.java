@@ -39,13 +39,6 @@ public interface MedicineSpi {
   /// Finds medicines by laboratory holder.
   List<Medicine> findByLaboratoryHolder(String laboratoryHolder);
 
-  /// Retrieves all regulatory events associated with medicines having
-  /// the given registration number.
-  ///
-  /// @param registrationNumber the registration number to look up events for
-  /// @return a list of medicine events (never `null`)
-  List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber);
-
   /// Searches medicines using the given filter.
   ///
   /// @param filter the search filter

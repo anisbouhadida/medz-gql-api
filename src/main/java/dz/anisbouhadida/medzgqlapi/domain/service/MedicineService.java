@@ -50,13 +50,6 @@ public class MedicineService implements MedicineApi {
     return medicineSpi.findByLaboratoryHolder(laboratoryHolder);
   }
 
-
-
-  @Override
-  public List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber) {
-    return medicineSpi.findEventsByRegistrationNumber(registrationNumber);
-  }
-
   @Override
   public List<Medicine> search(MedicineSearchFilter filter) {
     return medicineSpi.search(filter);

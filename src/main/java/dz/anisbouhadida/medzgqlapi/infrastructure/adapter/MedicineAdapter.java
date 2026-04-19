@@ -69,37 +69,6 @@ public class MedicineAdapter implements MedicineSpi {
   }
 
   @Override
-  public List<MedicineEvent> findEventsByRegistrationNumber(String registrationNumber) {
-    Optional<MedicineEntity> medicineEntity =
-        medicineRepository.findByRegistrationNumber(registrationNumber);
-    List<MedicineEvent> events = new ArrayList<>();
-
-    if (medicineEntity.isEmpty()) {
-      return events;
-    }
-
-      Long id = medicineEntity.get().getMedicineId();
-
-      nomenclatureEventRepository
-          .findByMedicineId(id)
-          .map(mapper::toDomain)
-          .ifPresent(events::add);
-
-      withdrawalEventRepository
-          .findByMedicineId(id)
-          .map(mapper::toDomain)
-          .ifPresent(events::add);
-
-      nonRenewalEventRepository
-          .findByMedicineId(id)
-          .map(mapper::toDomain)
-          .ifPresent(events::add);
-
-
-    return events;
-  }
-
-  @Override
   public List<Medicine> search(MedicineSearchFilter filter) {
 
     String searchText = filter.searchText();

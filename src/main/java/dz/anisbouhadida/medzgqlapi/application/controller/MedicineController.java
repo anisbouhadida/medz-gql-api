@@ -63,12 +63,6 @@ public class MedicineController {
     return medicineApi.search(filter);
   }
 
-  /// Retrieve all regulatory events for medicines matching a registration number.
-  @QueryMapping
-  public List<MedicineEvent> medicineEvents(@Argument @NotBlank @Size(max = 255) String registrationNumber) {
-    return medicineApi.findEventsByRegistrationNumber(registrationNumber);
-  }
-
   @BatchMapping
   public List<MedicineStatus> status(List<Medicine> medicines) {
     List<Long> medicineIds = medicines.stream().map(Medicine::id).toList();
