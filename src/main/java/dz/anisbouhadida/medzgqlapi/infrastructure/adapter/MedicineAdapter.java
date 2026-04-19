@@ -76,7 +76,7 @@ public class MedicineAdapter implements MedicineSpi {
     MedicineStatus status = filter.status();
     List<String> laboratoryHolders = filter.laboratoryHolders();
 
-    Specification<MedicineEntity> spec = (root, query, cb) -> cb.conjunction();
+    Specification<MedicineEntity> spec = (_, _, cb) -> cb.conjunction();
 
     if (searchText != null && !searchText.isBlank()) {
       String escaped = escapeLike(searchText.toLowerCase());
@@ -85,10 +85,10 @@ public class MedicineAdapter implements MedicineSpi {
           spec.and(
               (root, _, cb) ->
                   cb.or(
-                      cb.like(cb.lower(root.get("registrationNumber")), pattern),
-                      cb.like(cb.lower(root.get("code")), pattern),
-                      cb.like(cb.lower(root.get("icd")), pattern),
-                      cb.like(cb.lower(root.get("brandName")), pattern)));
+                      cb.like(cb.lower(root.get("registrationNumber")), pattern, '\\'),
+                      cb.like(cb.lower(root.get("code")), pattern, '\\'),
+                      cb.like(cb.lower(root.get("icd")), pattern, '\\'),
+                      cb.like(cb.lower(root.get("brandName")), pattern, '\\')));
     }
     if (origin != null) {
       spec = spec.and((root, _, cb) -> cb.equal(root.get("origin"), origin));
