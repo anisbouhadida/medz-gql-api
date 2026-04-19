@@ -60,7 +60,7 @@ class MedicineControllerTest {
       List<Medicine> expected = List.of(Instancio.create(Medicine.class));
       when(medicineApi.search(filter)).thenReturn(expected);
 
-      List<Medicine> actual = medicineController.medicineSearch(filter);
+      List<Medicine> actual = medicineController.medicinesSearch(filter);
 
       assertEquals(expected, actual);
       verify(medicineApi).search(filter);

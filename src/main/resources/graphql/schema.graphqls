@@ -130,22 +130,19 @@ type Query {
   medicineByRegistrationNumber(registrationNumber: String!): Medicine
 
   "Retrieve a medicine by its unique code"
-  medicineByCode(code: String!): [Medicine!]!
+  medicinesByCode(code: String!): [Medicine!]!
 
   "Retrieve a medicine by its ICD"
-  medicineByIcd(icd: String!): [Medicine!]!
+  medicinesByIcd(icd: String!): [Medicine!]!
 
   "Retrieve a medicine by its brand name"
-  medicineByBrandName(brandName: String!): [Medicine!]!
+  medicinesByBrandName(brandName: String!): [Medicine!]!
 
   "Retrieve a medicine by its laboratory holder"
-  medicineByLaboratoryHolder(laboratoryHolder: String!): [Medicine!]!
-
-  "Retrieve events for a given medicine registration number"
-  medicineEvents(registrationNumber: String!): [MedicineEvent!]!
+  medicinesByLaboratoryHolder(laboratoryHolder: String!): [Medicine!]!
 
   "Search medicines by text (registration number, code, INN, or brand name) and optional filters"
-  medicineSearch(filter: MedicineSearchFilter!): [Medicine!]!
+  medicinesSearch(filter: MedicineSearchFilter!): [Medicine!]!
 }
 
 """Input filter for searching medicines."""

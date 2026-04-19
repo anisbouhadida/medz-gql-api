@@ -38,28 +38,28 @@ public class MedicineController {
 
   /// Retrieve a medicine by its unique code.
   @QueryMapping
-  public List<Medicine> medicineByCode(@Argument @NotBlank @Size(max = 255) String code) {
+  public List<Medicine> medicinesByCode(@Argument @NotBlank @Size(max = 255) String code) {
     return medicineApi.findByCode(code);
   }
 
   @QueryMapping
-  public List<Medicine> medicineByIcd(@Argument @NotBlank @Size(max = 255) String icd) {
+  public List<Medicine> medicinesByIcd(@Argument @NotBlank @Size(max = 255) String icd) {
     return medicineApi.findByIcd(icd);
   }
 
   @QueryMapping
-  public List<Medicine> medicineByBrandName(@Argument @NotBlank @Size(max = 255) String brandName){
+  public List<Medicine> medicinesByBrandName(@Argument @NotBlank @Size(max = 255) String brandName){
     return medicineApi.findByBrandName(brandName);
   }
 
   @QueryMapping
-  public List<Medicine> medicineByLaboratoryHolder(@Argument @NotBlank @Size(max = 255) String laboratoryHolder){
+  public List<Medicine> medicinesByLaboratoryHolder(@Argument @NotBlank @Size(max = 255) String laboratoryHolder){
     return medicineApi.findByLaboratoryHolder(laboratoryHolder);
   }
 
   /// Search medicines by text and optional filters.
   @QueryMapping
-  public List<Medicine> medicineSearch(@Argument @Valid MedicineSearchFilter filter) {
+  public List<Medicine> medicinesSearch(@Argument @Valid MedicineSearchFilter filter) {
     return medicineApi.search(filter);
   }
 
