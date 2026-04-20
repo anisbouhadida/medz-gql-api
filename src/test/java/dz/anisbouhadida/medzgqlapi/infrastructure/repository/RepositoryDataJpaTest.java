@@ -1,6 +1,8 @@
 package dz.anisbouhadida.medzgqlapi.infrastructure.repository;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineEventType;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
@@ -194,7 +196,7 @@ class RepositoryDataJpaTest {
         MedicineStatus.ACTIVE,
         List.of("saidal"));
 
-    List<Medicine> results = medicineAdapter.search(filter);
+    List<Medicine> results = medicineAdapter.search(filter, new MedicinePageRequest(20, null, null, null, null)).content();
 
     assertEquals(List.of(activeImportedMedicine.getRegistrationNumber()), results.stream().map(Medicine::registrationNumber).toList());
   }

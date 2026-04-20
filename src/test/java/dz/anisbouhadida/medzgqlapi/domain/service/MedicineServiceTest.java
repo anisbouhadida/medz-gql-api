@@ -2,6 +2,8 @@ package dz.anisbouhadida.medzgqlapi.domain.service;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.NomenclatureEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
@@ -64,16 +66,17 @@ class MedicineServiceTest {
   }
 
   @Test
-  @DisplayName("search should delegate the filter to the SPI")
-  void search_shouldDelegateFilterToSpi() {
+  @DisplayName("search should delegate the filter and page request to the SPI")
+  void search_shouldDelegateFilterAndPageRequestToSpi() {
     MedicineSearchFilter filter = new MedicineSearchFilter("doliprane", MedicineOrigin.IMPORTED, MedicineStatus.ACTIVE, List.of("Saidal"));
-    List<Medicine> expected = List.of(Instancio.create(Medicine.class));
-    when(medicineSpi.search(filter)).thenReturn(expected);
+    MedicinePageRequest pageRequest = new MedicinePageRequest(10, null, null, null, null);
+    MedicinePage expected = new MedicinePage(List.of(Instancio.create(Medicine.class)), 1L, false, false, 0L);
+    when(medicineSpi.search(filter, pageRequest)).thenReturn(expected);
 
-    List<Medicine> actual = medicineService.search(filter);
+    MedicinePage actual = medicineService.search(filter, pageRequest);
 
     assertSame(expected, actual);
-    verify(medicineSpi).search(filter);
+    verify(medicineSpi).search(filter, pageRequest);
   }
 
   @Test

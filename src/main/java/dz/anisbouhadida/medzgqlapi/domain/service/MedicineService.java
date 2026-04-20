@@ -3,6 +3,8 @@ package dz.anisbouhadida.medzgqlapi.domain.service;
 import dz.anisbouhadida.medzgqlapi.domain.api.MedicineApi;
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
 import dz.anisbouhadida.medzgqlapi.domain.spi.MedicineSpi;
@@ -51,8 +53,8 @@ public class MedicineService implements MedicineApi {
   }
 
   @Override
-  public List<Medicine> search(MedicineSearchFilter filter) {
-    return medicineSpi.search(filter);
+  public MedicinePage search(MedicineSearchFilter filter, MedicinePageRequest pageRequest) {
+    return medicineSpi.search(filter, pageRequest);
   }
 
   @Override

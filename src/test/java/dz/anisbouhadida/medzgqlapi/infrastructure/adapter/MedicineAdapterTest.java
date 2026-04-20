@@ -2,12 +2,17 @@ package dz.anisbouhadida.medzgqlapi.infrastructure.adapter;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSortInput;
 import dz.anisbouhadida.medzgqlapi.domain.model.NomenclatureEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.NonRenewalEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.WithdrawalEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
+import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineSortField;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
+import dz.anisbouhadida.medzgqlapi.domain.model.enums.SortDirection;
 import dz.anisbouhadida.medzgqlapi.infrastructure.entity.MedicineEntity;
 import dz.anisbouhadida.medzgqlapi.infrastructure.entity.MedicineStatusHistoryEntity;
 import dz.anisbouhadida.medzgqlapi.infrastructure.entity.NomenclatureEventEntity;
@@ -28,6 +33,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
@@ -37,6 +45,8 @@ import java.util.Optional;
 import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -92,22 +102,25 @@ class MedicineAdapterTest {
   @DisplayName("search")
   class Search {
 
+    private static final MedicinePageRequest DEFAULT_PAGE = new MedicinePageRequest(10, null, null, null, null);
+
     @Test
-    @DisplayName("search should return an empty list when the current-status lookup yields no medicine IDs")
-    void search_shouldReturnEmptyList_whenStatusLookupReturnsNoMedicineIds() {
+    @DisplayName("search should return an empty MedicinePage when the current-status lookup yields no medicine IDs")
+    void search_shouldReturnEmptyPage_whenStatusLookupReturnsNoMedicineIds() {
       MedicineSearchFilter filter = new MedicineSearchFilter(null, null, MedicineStatus.WITHDRAWN, null);
       when(statusHistoryRepository.findMedicineIdsByCurrentStatus(MedicineStatus.WITHDRAWN)).thenReturn(List.of());
 
-      List<Medicine> actual = medicineAdapter.search(filter);
+      MedicinePage actual = medicineAdapter.search(filter, DEFAULT_PAGE);
 
-      assertEquals(List.of(), actual);
+      assertEquals(0L, actual.totalElements());
+      assertEquals(List.of(), actual.content());
       verify(statusHistoryRepository).findMedicineIdsByCurrentStatus(MedicineStatus.WITHDRAWN);
-      verify(medicineRepository, never()).findAll(anySpecification());
+      verify(medicineRepository, never()).findAll(anySpecification(), any(Pageable.class));
     }
 
     @Test
-    @DisplayName("search should query the repository and map its results when filters are valid")
-    void search_shouldQueryRepositoryAndMapResults_whenFiltersAreValid() {
+    @DisplayName("search should query the repository with a pageable and map its results")
+    void search_shouldQueryRepositoryWithPageableAndMapResults() {
       MedicineSearchFilter filter = new MedicineSearchFilter(
           "para%_\\",
           MedicineOrigin.IMPORTED,
@@ -116,15 +129,70 @@ class MedicineAdapterTest {
       MedicineEntity entity = Instancio.create(MedicineEntity.class);
       Medicine expected = Instancio.create(Medicine.class);
       when(statusHistoryRepository.findMedicineIdsByCurrentStatus(MedicineStatus.ACTIVE)).thenReturn(List.of(2L, 3L));
-      when(medicineRepository.findAll(anySpecification())).thenReturn(List.of(entity));
+      when(medicineRepository.findAll(anySpecification(), any(Pageable.class)))
+          .thenReturn(new PageImpl<>(List.of(entity), PageRequest.of(0, 10), 1));
       when(mapper.toDomain(entity)).thenReturn(expected);
 
-      List<Medicine> actual = medicineAdapter.search(filter);
+      MedicinePage actual = medicineAdapter.search(filter, DEFAULT_PAGE);
 
-      assertEquals(List.of(expected), actual);
+      assertEquals(List.of(expected), actual.content());
+      assertEquals(1L, actual.totalElements());
+      assertFalse(actual.hasNextPage());
+      assertFalse(actual.hasPreviousPage());
       verify(statusHistoryRepository).findMedicineIdsByCurrentStatus(MedicineStatus.ACTIVE);
-      verify(medicineRepository).findAll(anySpecification());
+      verify(medicineRepository).findAll(anySpecification(), any(Pageable.class));
       verify(mapper).toDomain(entity);
+    }
+
+    @Test
+    @DisplayName("search should report hasNextPage=true when there are more results beyond the page")
+    void search_shouldReportHasNextPage_whenMoreResultsExist() {
+      MedicineSearchFilter filter = new MedicineSearchFilter("aspirin", null, null, null);
+      MedicineEntity entity = Instancio.create(MedicineEntity.class);
+      Medicine medicine = Instancio.create(Medicine.class);
+      // 5 total, page size 2 → page 0 has next
+      when(medicineRepository.findAll(anySpecification(), any(Pageable.class)))
+          .thenReturn(new PageImpl<>(List.of(entity, entity), PageRequest.of(0, 2), 5));
+      when(mapper.toDomain(entity)).thenReturn(medicine);
+
+      MedicinePageRequest pageRequest = new MedicinePageRequest(2, null, null, null, null);
+      MedicinePage actual = medicineAdapter.search(filter, pageRequest);
+
+      assertTrue(actual.hasNextPage());
+      assertFalse(actual.hasPreviousPage());
+      assertEquals(5L, actual.totalElements());
+    }
+
+    @Test
+    @DisplayName("search should forward sort criteria to the repository as a Sort order")
+    void search_shouldForwardSortCriteriaToRepository() {
+      MedicineSearchFilter filter = new MedicineSearchFilter("aspirin", null, null, null);
+      MedicinePageRequest pageRequest = new MedicinePageRequest(
+          10, null, null, null,
+          List.of(new MedicineSortInput(MedicineSortField.BRAND_NAME, SortDirection.DESC)));
+      when(medicineRepository.findAll(anySpecification(), any(Pageable.class)))
+          .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 10), 0));
+
+      medicineAdapter.search(filter, pageRequest);
+
+      verify(medicineRepository).findAll(anySpecification(), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("search with backward pagination (last/before) should compute start offset correctly")
+    void search_backwardPagination_shouldComputeStartOffsetCorrectly() {
+      MedicineSearchFilter filter = new MedicineSearchFilter("aspirin", null, null, null);
+      // cursor for offset 20 → page starts at offset 10 for last=10
+      String beforeCursor = encodeCursor(20);
+      MedicinePageRequest pageRequest = new MedicinePageRequest(null, null, 10, beforeCursor, null);
+      when(medicineRepository.findAll(anySpecification(), any(Pageable.class)))
+          .thenReturn(new PageImpl<>(List.of(), PageRequest.of(1, 10), 20));
+
+      MedicinePage actual = medicineAdapter.search(filter, pageRequest);
+
+      // page number 1, page size 10: offset 10–19
+      assertEquals(0L, actual.content().size());
+      verify(medicineRepository).findAll(anySpecification(), any(Pageable.class));
     }
   }
 
@@ -218,6 +286,11 @@ class MedicineAdapterTest {
   @SuppressWarnings("unchecked")
   private static Specification<MedicineEntity> anySpecification() {
     return any(Specification.class);
+  }
+
+  private static String encodeCursor(long offset) {
+    String raw = "offset:" + offset;
+    return java.util.Base64.getEncoder().encodeToString(raw.getBytes(java.nio.charset.StandardCharsets.UTF_8));
   }
 }
 

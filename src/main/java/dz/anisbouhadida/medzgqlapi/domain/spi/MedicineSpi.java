@@ -2,6 +2,8 @@ package dz.anisbouhadida.medzgqlapi.domain.spi;
 
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
 
@@ -39,11 +41,12 @@ public interface MedicineSpi {
   /// Finds medicines by laboratory holder.
   List<Medicine> findByLaboratoryHolder(String laboratoryHolder);
 
-  /// Searches medicines using the given filter.
+  /// Searches medicines using the given filter and pagination request.
   ///
-  /// @param filter the search filter
-  /// @return a list of matching medicines (never `null`)
-  List<Medicine> search(MedicineSearchFilter filter);
+  /// @param filter      the search filter
+  /// @param pageRequest pagination and sort parameters
+  /// @return a paginated result of matching medicines
+  MedicinePage search(MedicineSearchFilter filter, MedicinePageRequest pageRequest);
 
   /// Finds the latest status for each of the given medicine IDs.
   ///

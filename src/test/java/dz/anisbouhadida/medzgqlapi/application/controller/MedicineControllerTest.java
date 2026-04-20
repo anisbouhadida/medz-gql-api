@@ -3,6 +3,8 @@ package dz.anisbouhadida.medzgqlapi.application.controller;
 import dz.anisbouhadida.medzgqlapi.domain.api.MedicineApi;
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.NomenclatureEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineOrigin;
@@ -25,6 +27,8 @@ import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -54,16 +58,18 @@ class MedicineControllerTest {
     }
 
     @Test
-    @DisplayName("medicineSearch should delegate the filter to the API")
-    void medicineSearch_shouldDelegateFilterToApi() {
+    @DisplayName("medicinesSearch should build a Connection from the API page result")
+    void medicinesSearch_shouldBuildConnectionFromApiPage() {
       MedicineSearchFilter filter = new MedicineSearchFilter("para", MedicineOrigin.IMPORTED, MedicineStatus.ACTIVE, List.of("Saidal"));
-      List<Medicine> expected = List.of(Instancio.create(Medicine.class));
-      when(medicineApi.search(filter)).thenReturn(expected);
+      Medicine medicine = Instancio.create(Medicine.class);
+      MedicinePage page = new MedicinePage(List.of(medicine), 1L, false, false, 0L);
+      when(medicineApi.search(eq(filter), any(MedicinePageRequest.class))).thenReturn(page);
 
-      List<Medicine> actual = medicineController.medicinesSearch(filter);
+      MedicineConnection actual = medicineController.medicinesSearch(filter, 10, null, null, null, null);
 
-      assertEquals(expected, actual);
-      verify(medicineApi).search(filter);
+      assertEquals(1, actual.edges().size());
+      assertEquals(1L, actual.totalCount());
+      verify(medicineApi).search(eq(filter), any(MedicinePageRequest.class));
     }
   }
 

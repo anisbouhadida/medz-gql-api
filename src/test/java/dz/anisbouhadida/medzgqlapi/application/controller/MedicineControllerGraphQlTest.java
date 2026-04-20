@@ -4,6 +4,9 @@ import dz.anisbouhadida.medzgqlapi.application.config.GraphQlConfig;
 import dz.anisbouhadida.medzgqlapi.application.config.GraphQlExceptionHandler;
 import dz.anisbouhadida.medzgqlapi.domain.api.MedicineApi;
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
 import dz.anisbouhadida.medzgqlapi.domain.model.NomenclatureEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.NonRenewalEvent;
 import dz.anisbouhadida.medzgqlapi.domain.model.WithdrawalEvent;
@@ -29,6 +32,8 @@ import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -159,7 +164,7 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($code: String!) {
-          medicineByCode(code: $code) {
+          medicinesByCode(code: $code) {
             id
             brandName
             status
@@ -171,14 +176,14 @@ class MedicineControllerGraphQlTest {
         """)
         .variable("code", "CODE-ALL")
         .execute()
-        .path("medicineByCode[0].id").entity(String.class).isEqualTo("1")
-        .path("medicineByCode[0].brandName").entity(String.class).isEqualTo("Doliprane")
-        .path("medicineByCode[0].status").entity(String.class).isEqualTo("ACTIVE")
-        .path("medicineByCode[0].event[0].__typename").entity(String.class).isEqualTo("NomenclatureEvent")
-        .path("medicineByCode[1].id").entity(String.class).isEqualTo("2")
-        .path("medicineByCode[1].brandName").entity(String.class).isEqualTo("Clamoxyl")
-        .path("medicineByCode[1].status").entity(String.class).isEqualTo("WITHDRAWN")
-        .path("medicineByCode[1].event").entityList(Object.class).hasSize(0);
+        .path("medicinesByCode[0].id").entity(String.class).isEqualTo("1")
+        .path("medicinesByCode[0].brandName").entity(String.class).isEqualTo("Doliprane")
+        .path("medicinesByCode[0].status").entity(String.class).isEqualTo("ACTIVE")
+        .path("medicinesByCode[0].event[0].__typename").entity(String.class).isEqualTo("NomenclatureEvent")
+        .path("medicinesByCode[1].id").entity(String.class).isEqualTo("2")
+        .path("medicinesByCode[1].brandName").entity(String.class).isEqualTo("Clamoxyl")
+        .path("medicinesByCode[1].status").entity(String.class).isEqualTo("WITHDRAWN")
+        .path("medicinesByCode[1].event").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByCode("CODE-ALL");
     verify(medicineApi).findLatestStatusByMedicineIds(List.of(1L, 2L));
@@ -192,14 +197,14 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($code: String!) {
-          medicineByCode(code: $code) {
+          medicinesByCode(code: $code) {
             id
           }
         }
         """)
         .variable("code", "UNKNOWN")
         .execute()
-        .path("medicineByCode").entityList(Object.class).hasSize(0);
+        .path("medicinesByCode").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByCode("UNKNOWN");
   }
@@ -209,7 +214,7 @@ class MedicineControllerGraphQlTest {
   void medicineByCode_shouldReturnBadRequest_whenArgumentIsBlank() {
     GraphQlTester.Response response = graphQlTester.document("""
         query {
-          medicineByCode(code: "") {
+          medicinesByCode(code: "") {
             id
           }
         }
@@ -235,7 +240,7 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($icd: String!) {
-          medicineByIcd(icd: $icd) {
+          medicinesByIcd(icd: $icd) {
             id
             internationalCommonDenomination
             status
@@ -245,10 +250,10 @@ class MedicineControllerGraphQlTest {
         """)
         .variable("icd", "Paracetamol")
         .execute()
-        .path("medicineByIcd[0].id").entity(String.class).isEqualTo("5")
-        .path("medicineByIcd[0].internationalCommonDenomination").entity(String.class).isEqualTo("Paracetamol")
-        .path("medicineByIcd[0].status").entity(String.class).isEqualTo("ACTIVE")
-        .path("medicineByIcd[0].event").entityList(Object.class).hasSize(0);
+        .path("medicinesByIcd[0].id").entity(String.class).isEqualTo("5")
+        .path("medicinesByIcd[0].internationalCommonDenomination").entity(String.class).isEqualTo("Paracetamol")
+        .path("medicinesByIcd[0].status").entity(String.class).isEqualTo("ACTIVE")
+        .path("medicinesByIcd[0].event").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByIcd("Paracetamol");
   }
@@ -260,14 +265,14 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($icd: String!) {
-          medicineByIcd(icd: $icd) {
+          medicinesByIcd(icd: $icd) {
             id
           }
         }
         """)
         .variable("icd", "NonExistent")
         .execute()
-        .path("medicineByIcd").entityList(Object.class).hasSize(0);
+        .path("medicinesByIcd").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByIcd("NonExistent");
   }
@@ -277,7 +282,7 @@ class MedicineControllerGraphQlTest {
   void medicineByIcd_shouldReturnBadRequest_whenArgumentIsBlank() {
     GraphQlTester.Response response = graphQlTester.document("""
         query {
-          medicineByIcd(icd: "") {
+          medicinesByIcd(icd: "") {
             id
           }
         }
@@ -303,7 +308,7 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($brandName: String!) {
-          medicineByBrandName(brandName: $brandName) {
+          medicinesByBrandName(brandName: $brandName) {
             id
             brandName
             status
@@ -313,10 +318,10 @@ class MedicineControllerGraphQlTest {
         """)
         .variable("brandName", "Doliprane")
         .execute()
-        .path("medicineByBrandName[0].id").entity(String.class).isEqualTo("7")
-        .path("medicineByBrandName[0].brandName").entity(String.class).isEqualTo("Doliprane")
-        .path("medicineByBrandName[0].status").entity(String.class).isEqualTo("ACTIVE")
-        .path("medicineByBrandName[0].event").entityList(Object.class).hasSize(0);
+        .path("medicinesByBrandName[0].id").entity(String.class).isEqualTo("7")
+        .path("medicinesByBrandName[0].brandName").entity(String.class).isEqualTo("Doliprane")
+        .path("medicinesByBrandName[0].status").entity(String.class).isEqualTo("ACTIVE")
+        .path("medicinesByBrandName[0].event").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByBrandName("Doliprane");
   }
@@ -328,14 +333,14 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($brandName: String!) {
-          medicineByBrandName(brandName: $brandName) {
+          medicinesByBrandName(brandName: $brandName) {
             id
           }
         }
         """)
         .variable("brandName", "Unknown")
         .execute()
-        .path("medicineByBrandName").entityList(Object.class).hasSize(0);
+        .path("medicinesByBrandName").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByBrandName("Unknown");
   }
@@ -345,7 +350,7 @@ class MedicineControllerGraphQlTest {
   void medicineByBrandName_shouldReturnBadRequest_whenArgumentIsBlank() {
     GraphQlTester.Response response = graphQlTester.document("""
         query {
-          medicineByBrandName(brandName: "") {
+          medicinesByBrandName(brandName: "") {
             id
           }
         }
@@ -371,7 +376,7 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($laboratoryHolder: String!) {
-          medicineByLaboratoryHolder(laboratoryHolder: $laboratoryHolder) {
+          medicinesByLaboratoryHolder(laboratoryHolder: $laboratoryHolder) {
             id
             laboratoryHolder
             status
@@ -381,10 +386,10 @@ class MedicineControllerGraphQlTest {
         """)
         .variable("laboratoryHolder", "Saidal")
         .execute()
-        .path("medicineByLaboratoryHolder[0].id").entity(String.class).isEqualTo("9")
-        .path("medicineByLaboratoryHolder[0].laboratoryHolder").entity(String.class).isEqualTo("Saidal")
-        .path("medicineByLaboratoryHolder[0].status").entity(String.class).isEqualTo("ACTIVE")
-        .path("medicineByLaboratoryHolder[0].event").entityList(Object.class).hasSize(0);
+        .path("medicinesByLaboratoryHolder[0].id").entity(String.class).isEqualTo("9")
+        .path("medicinesByLaboratoryHolder[0].laboratoryHolder").entity(String.class).isEqualTo("Saidal")
+        .path("medicinesByLaboratoryHolder[0].status").entity(String.class).isEqualTo("ACTIVE")
+        .path("medicinesByLaboratoryHolder[0].event").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByLaboratoryHolder("Saidal");
   }
@@ -396,14 +401,14 @@ class MedicineControllerGraphQlTest {
 
     graphQlTester.document("""
         query($laboratoryHolder: String!) {
-          medicineByLaboratoryHolder(laboratoryHolder: $laboratoryHolder) {
+          medicinesByLaboratoryHolder(laboratoryHolder: $laboratoryHolder) {
             id
           }
         }
         """)
         .variable("laboratoryHolder", "Unknown")
         .execute()
-        .path("medicineByLaboratoryHolder").entityList(Object.class).hasSize(0);
+        .path("medicinesByLaboratoryHolder").entityList(Object.class).hasSize(0);
 
     verify(medicineApi).findByLaboratoryHolder("Unknown");
   }
@@ -413,7 +418,7 @@ class MedicineControllerGraphQlTest {
   void medicineByLaboratoryHolder_shouldReturnBadRequest_whenArgumentIsBlank() {
     GraphQlTester.Response response = graphQlTester.document("""
         query {
-          medicineByLaboratoryHolder(laboratoryHolder: "") {
+          medicinesByLaboratoryHolder(laboratoryHolder: "") {
             id
           }
         }
@@ -427,58 +432,110 @@ class MedicineControllerGraphQlTest {
   }
 
   @Test
-  @DisplayName("medicineSearch should return matching medicines when a valid filter is provided")
-  void medicineSearch_shouldReturnMatchingMedicines_whenFilterIsValid() {
+  @DisplayName("medicinesSearch should return a Connection with edges and pageInfo")
+  void medicinesSearch_shouldReturnConnectionWithEdgesAndPageInfo() {
     Medicine medicine = Instancio.of(Medicine.class)
         .set(field(Medicine::id), 10L)
         .set(field(Medicine::brandName), "Doliprane")
         .create();
-    when(medicineApi.search(new dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter(
-        "doliprane", null, null, null))).thenReturn(List.of(medicine));
+    MedicinePage page = new MedicinePage(List.of(medicine), 1L, false, false, 0L);
+    MedicineSearchFilter filter = new MedicineSearchFilter("doliprane", null, null, null);
+    when(medicineApi.search(eq(filter), any(MedicinePageRequest.class))).thenReturn(page);
     when(medicineApi.findLatestStatusByMedicineIds(List.of(10L))).thenReturn(Map.of(10L, MedicineStatus.ACTIVE));
     when(medicineApi.findEventsByMedicineIds(List.of(10L))).thenReturn(Map.of(10L, List.of()));
 
     graphQlTester.document("""
         query {
-          medicineSearch(filter: { searchText: "doliprane" }) {
-            id
-            brandName
-            status
-            event { __typename }
+          medicinesSearch(filter: { searchText: "doliprane" }, first: 10) {
+            totalCount
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
+              startCursor
+              endCursor
+            }
+            edges {
+              cursor
+              node {
+                id
+                brandName
+                status
+                event { __typename }
+              }
+            }
           }
         }
         """)
         .execute()
-        .path("medicineSearch[0].id").entity(String.class).isEqualTo("10")
-        .path("medicineSearch[0].brandName").entity(String.class).isEqualTo("Doliprane")
-        .path("medicineSearch[0].status").entity(String.class).isEqualTo("ACTIVE")
-        .path("medicineSearch[0].event").entityList(Object.class).hasSize(0);
+        .path("medicinesSearch.totalCount").entity(Integer.class).isEqualTo(1)
+        .path("medicinesSearch.pageInfo.hasNextPage").entity(Boolean.class).isEqualTo(false)
+        .path("medicinesSearch.pageInfo.hasPreviousPage").entity(Boolean.class).isEqualTo(false)
+        .path("medicinesSearch.pageInfo.startCursor").entity(String.class).satisfies(c -> assertTrue(c != null && !c.isBlank()))
+        .path("medicinesSearch.pageInfo.endCursor").entity(String.class).satisfies(c -> assertTrue(c != null && !c.isBlank()))
+        .path("medicinesSearch.edges[0].node.id").entity(String.class).isEqualTo("10")
+        .path("medicinesSearch.edges[0].node.brandName").entity(String.class).isEqualTo("Doliprane")
+        .path("medicinesSearch.edges[0].cursor").entity(String.class).satisfies(c -> assertTrue(c != null && !c.isBlank()));
   }
 
   @Test
-  @DisplayName("medicineSearch should return an empty list when no medicines match the filter")
-  void medicineSearch_shouldReturnEmptyList_whenNoMedicinesMatchTheFilter() {
-    when(medicineApi.search(new dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter(
-        "zzzzz", null, null, null))).thenReturn(List.of());
+  @DisplayName("medicinesSearch should return empty edges and correct pageInfo when no results match")
+  void medicinesSearch_shouldReturnEmptyEdges_whenNoResultsMatch() {
+    MedicinePage page = new MedicinePage(List.of(), 0L, false, false, 0L);
+    MedicineSearchFilter filter = new MedicineSearchFilter("zzzzz", null, null, null);
+    when(medicineApi.search(eq(filter), any(MedicinePageRequest.class))).thenReturn(page);
 
     graphQlTester.document("""
         query {
-          medicineSearch(filter: { searchText: "zzzzz" }) {
-            id
+          medicinesSearch(filter: { searchText: "zzzzz" }) {
+            totalCount
+            pageInfo { hasNextPage hasPreviousPage }
+            edges { cursor node { id } }
           }
         }
         """)
         .execute()
-        .path("medicineSearch").entityList(Object.class).hasSize(0);
+        .path("medicinesSearch.totalCount").entity(Integer.class).isEqualTo(0)
+        .path("medicinesSearch.edges").entityList(Object.class).hasSize(0)
+        .path("medicinesSearch.pageInfo.hasNextPage").entity(Boolean.class).isEqualTo(false);
   }
 
   @Test
-  @DisplayName("medicineSearch should surface validation failures as BAD_REQUEST GraphQL errors")
-  void medicineSearch_shouldSurfaceValidationFailuresAsBadRequestErrors() {
+  @DisplayName("medicinesSearch should indicate hasNextPage=true when more results exist")
+  void medicinesSearch_shouldIndicateHasNextPage_whenMoreResultsExist() {
+    List<Medicine> medicines = List.of(
+        Instancio.of(Medicine.class).set(field(Medicine::id), 1L).create(),
+        Instancio.of(Medicine.class).set(field(Medicine::id), 2L).create());
+    MedicinePage page = new MedicinePage(medicines, 10L, true, false, 0L);
+    MedicineSearchFilter filter = new MedicineSearchFilter("aspirin", null, null, null);
+    when(medicineApi.search(eq(filter), any(MedicinePageRequest.class))).thenReturn(page);
+    when(medicineApi.findLatestStatusByMedicineIds(List.of(1L, 2L)))
+        .thenReturn(Map.of(1L, MedicineStatus.ACTIVE, 2L, MedicineStatus.ACTIVE));
+    when(medicineApi.findEventsByMedicineIds(List.of(1L, 2L)))
+        .thenReturn(Map.of(1L, List.of(), 2L, List.of()));
+
+    graphQlTester.document("""
+        query {
+          medicinesSearch(filter: { searchText: "aspirin" }, first: 2) {
+            totalCount
+            pageInfo { hasNextPage hasPreviousPage startCursor endCursor }
+            edges { cursor node { id } }
+          }
+        }
+        """)
+        .execute()
+        .path("medicinesSearch.totalCount").entity(Integer.class).isEqualTo(10)
+        .path("medicinesSearch.pageInfo.hasNextPage").entity(Boolean.class).isEqualTo(true)
+        .path("medicinesSearch.edges").entityList(Object.class).hasSize(2);
+  }
+
+  @Test
+  @DisplayName("medicinesSearch should surface validation failures as BAD_REQUEST GraphQL errors")
+  void medicinesSearch_shouldSurfaceValidationFailuresAsBadRequestErrors() {
     GraphQlTester.Response response = graphQlTester.document("""
         query {
-          medicineSearch(filter: {}) {
-            id
+          medicinesSearch(filter: {}) {
+            totalCount
+            edges { node { id } }
           }
         }
         """)

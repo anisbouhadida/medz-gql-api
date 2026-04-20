@@ -3,9 +3,14 @@ package dz.anisbouhadida.medzgqlapi.application.controller;
 import dz.anisbouhadida.medzgqlapi.domain.api.MedicineApi;
 import dz.anisbouhadida.medzgqlapi.domain.model.Medicine;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineEvent;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePage;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicinePageRequest;
 import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSearchFilter;
+import dz.anisbouhadida.medzgqlapi.domain.model.MedicineSortInput;
 import dz.anisbouhadida.medzgqlapi.domain.model.enums.MedicineStatus;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +20,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -57,10 +63,36 @@ public class MedicineController {
     return medicineApi.findByLaboratoryHolder(laboratoryHolder);
   }
 
-  /// Search medicines by text and optional filters.
+  /// Search medicines by text and optional filters, with cursor-based pagination and sorting.
   @QueryMapping
-  public List<Medicine> medicinesSearch(@Argument @Valid MedicineSearchFilter filter) {
-    return medicineApi.search(filter);
+  public MedicineConnection medicinesSearch(
+      @Argument @Valid MedicineSearchFilter filter,
+      @Argument @Min(1) @Max(100) Integer first,
+      @Argument String after,
+      @Argument @Min(1) @Max(100) Integer last,
+      @Argument String before,
+      @Argument List<MedicineSortInput> sort) {
+
+    MedicinePageRequest pageRequest = new MedicinePageRequest(first, after, last, before, sort);
+    MedicinePage page = medicineApi.search(filter, pageRequest);
+
+    long startOffset = page.startOffset();
+    List<MedicineEdge> edges = new ArrayList<>();
+    for (int i = 0; i < page.content().size(); i++) {
+      String cursor = CursorUtils.encode(startOffset + i);
+      edges.add(new MedicineEdge(page.content().get(i), cursor));
+    }
+
+    String startCursor = edges.isEmpty() ? null : edges.getFirst().cursor();
+    String endCursor   = edges.isEmpty() ? null : edges.getLast().cursor();
+
+    PageInfo pageInfo = new PageInfo(
+        page.hasNextPage(),
+        page.hasPreviousPage(),
+        startCursor,
+        endCursor);
+
+    return new MedicineConnection(edges, pageInfo, page.totalElements());
   }
 
   @BatchMapping

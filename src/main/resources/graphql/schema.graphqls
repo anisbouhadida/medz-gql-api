@@ -40,6 +40,20 @@ enum MedicineEventType {
   NON_RENEWAL
 }
 
+"""Fields by which medicine search results can be sorted."""
+enum MedicineSortField {
+  REGISTRATION_NUMBER
+  BRAND_NAME
+  LABORATORY_HOLDER
+  INITIAL_REGISTRATION_DATE
+}
+
+"""Sort direction."""
+enum SortDirection {
+  ASC
+  DESC
+}
+
 # ── Types ────────────────────────────────────────────────────────────────────
 
 """A registered medicine with all its regulatory information."""
@@ -123,6 +137,36 @@ type NonRenewalEvent {
 """Any event affecting a medicine."""
 union MedicineEvent = NomenclatureEvent | WithdrawalEvent | NonRenewalEvent
 
+"""Pagination metadata following the Relay Connection spec."""
+type PageInfo {
+  "Whether more items exist after the end cursor"
+  hasNextPage: Boolean!
+  "Whether more items exist before the start cursor"
+  hasPreviousPage: Boolean!
+  "Cursor of the first edge in this page"
+  startCursor: String
+  "Cursor of the last edge in this page"
+  endCursor: String
+}
+
+"""A single edge in a paginated Medicine result set."""
+type MedicineEdge {
+  "The medicine record"
+  node: Medicine!
+  "Opaque pagination cursor for this edge"
+  cursor: String!
+}
+
+"""Paginated Medicine result set (Relay Connection)."""
+type MedicineConnection {
+  "Edges containing the medicine nodes and their cursors"
+  edges: [MedicineEdge!]!
+  "Pagination metadata"
+  pageInfo: PageInfo!
+  "Total number of matching medicines (regardless of pagination)"
+  totalCount: Int!
+}
+
 # ── Queries ──────────────────────────────────────────────────────────────────
 
 type Query {
@@ -141,8 +185,20 @@ type Query {
   "Retrieve a medicine by its laboratory holder"
   medicinesByLaboratoryHolder(laboratoryHolder: String!): [Medicine!]!
 
-  "Search medicines by text (registration number, code, INN, or brand name) and optional filters"
-  medicinesSearch(filter: MedicineSearchFilter!): [Medicine!]!
+  "Search medicines by text (registration number, code, INN, or brand name) and optional filters, with cursor-based pagination and sorting"
+  medicinesSearch(
+    filter: MedicineSearchFilter!
+    "Number of items to return after the cursor (forward pagination, max 100, default 20)"
+    first: Int
+    "Cursor after which items are returned (forward pagination)"
+    after: String
+    "Number of items to return before the cursor (backward pagination, max 100)"
+    last: Int
+    "Cursor before which items are returned (backward pagination)"
+    before: String
+    "Sort criteria (default: REGISTRATION_NUMBER ASC)"
+    sort: [MedicineSortInput!]
+  ): MedicineConnection!
 }
 
 """Input filter for searching medicines."""
@@ -156,3 +212,12 @@ input MedicineSearchFilter {
   "Laboratory holder names to filter by (max 50 entries, each max 255 chars)"
   laboratoryHolders: [String!]
 }
+
+"""Sort criterion for medicine search results."""
+input MedicineSortInput {
+  "Field to sort by"
+  field: MedicineSortField!
+  "Sort direction (default ASC)"
+  direction: SortDirection! = ASC
+}
+
